@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import Plot from "react-plotly.js";
 import "react-datepicker/dist/react-datepicker.css";
@@ -10,27 +10,7 @@ const colorPalette = {
   pressure: "#6A5ACD",
 };
 
-function DummyContourPlot({ variable, layout }) {
-  // Dummy contour data for consistent size
-  const dummyData = [
-    {
-      z: [
-        [1, 2, 3, 4, 5],
-        [2, 3, 4, 5, 6],
-        [3, 4, 5, 6, 7],
-        [4, 5, 6, 7, 8],
-        [5, 6, 7, 8, 9],
-      ],
-      x: [1, 2, 3, 4, 5],
-      y: [10, 20, 30, 40, 50],
-      type: "contour",
-      colorscale: variable === "temperature" ? "Hot" : "Blues",
-      name: variable.charAt(0).toUpperCase() + variable.slice(1),
-      showscale: true,
-    },
-  ];
-  return <Plot data={dummyData} layout={layout} />;
-}
+// Removed dummy salinity contour
 
 const Dashboard = ({ onClose, latitude, longitude }) => {
   const fiveYearsAgo = new Date();
@@ -43,6 +23,7 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [plotType, setPlotType] = useState("line"); // 'line' or 'contour'
+  const [contourData, setContourData] = useState(null);
 
   // Only show pressure for line plot
   const graphOptions =
@@ -77,31 +58,64 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
           { value: "salinity_1000", label: "Salinity @ 1000m" },
         ];
 
+  // Fetch line plot data
   const handleSubmit = async () => {
     setIsLoading(true);
     setError(null);
     setPlotProfiles([]);
+    setContourData(null);
 
-    const [variable, depth] = selectedGraph.split("_");
-    const startDateString = startDate.toISOString().split("T")[0];
-    const endDateString = endDate.toISOString().split("T")[0];
+    if (plotType === "line") {
+      const [variable, depth] = selectedGraph.split("_");
+      const startDateString = startDate.toISOString().split("T")[0];
+      const endDateString = endDate.toISOString().split("T")[0];
 
-    const url = `http://127.0.0.1:8080/api/timeseries_at_depth/?lat=${latitude}&lng=${longitude}&start_date=${startDateString}&end_date=${endDateString}&depth=${depth}`;
+      const url = `http://127.0.0.1:8080/api/timeseries_at_depth/?lat=${latitude}&lng=${longitude}&start_date=${startDateString}&end_date=${endDateString}&depth=${depth}`;
 
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to fetch data");
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Failed to fetch data");
+        }
+        const data = await response.json();
+        setPlotProfiles(data.profiles);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
-      const data = await response.json();
-      setPlotProfiles(data.profiles);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
+    } else if (plotType === "contour") {
+      const [variable] = selectedGraph.split("_");
+      const startDateString = startDate.toISOString().split("T")[0];
+      const endDateString = endDate.toISOString().split("T")[0];
+      const url = `http://127.0.0.1:8080/api/depth_time_contour/?lat=${latitude}&lng=${longitude}&start_date=${startDateString}&end_date=${endDateString}&variable=${variable}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Failed to fetch contour data");
+        }
+        const data = await response.json();
+        setContourData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
+
+  // Fetch contour data automatically when switching to contour plot
+  useEffect(() => {
+    if (plotType === "contour") {
+      setPlotProfiles([]);
+      setError(null);
+      setContourData(null);
+      handleSubmit();
+    }
+    // eslint-disable-next-line
+  }, [plotType, selectedGraph, startDate, endDate, latitude, longitude]);
 
   const getPlotData = () => {
     const [variable] = selectedGraph.split("_");
@@ -130,17 +144,41 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
     ];
   };
 
+  const getContourPlotData = () => {
+    const [variable] = selectedGraph.split("_");
+    if (!contourData || !contourData.matrix) return [];
+    const colorscale = variable === "temperature" ? "Hot" : "Blues";
+    const name = variable === "temperature" ? "Temperature" : "Salinity";
+    return [
+      {
+        z: contourData.matrix,
+        x: contourData.times,
+        y: contourData.depths,
+        type: "contour",
+        colorscale,
+        name,
+        showscale: true,
+      },
+    ];
+    return [];
+  };
+
   const plotLayout = {
-    title: `Data for Grid Cell at ${latitude.toFixed(2)}°, ${longitude.toFixed(
-      2
-    )}°`,
+    title:
+      plotType === "line"
+        ? `Data for Grid Cell at ${latitude.toFixed(2)}°, ${longitude.toFixed(
+            2
+          )}°`
+        : selectedGraph.startsWith("temperature")
+        ? "Depth-Time Contour Plot (Temperature)"
+        : "Depth-Time Contour Plot (Salinity)",
     height: 500,
     width: 700,
     autosize: true,
     margin: { l: 60, r: 60, b: 60, t: 80 },
-    xaxis: { title: plotType === "line" ? "Date" : "X Axis" },
+    xaxis: { title: "Date" },
     yaxis: {
-      title: plotType === "line" ? getPlotData()[0]?.name || "" : "Y Axis",
+      title: plotType === "line" ? getPlotData()[0]?.name || "" : "Depth (m)",
     },
     paper_bgcolor: "#f5f5f5",
     plot_bgcolor: "#ffffff",
@@ -280,10 +318,17 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
             )}
           </>
         ) : (
-          <DummyContourPlot
-            variable={selectedGraph.split("_")[0]}
-            layout={plotLayout}
-          />
+          <>
+            {isLoading && <p>Loading contour data...</p>}
+            {error && <p style={{ color: "red" }}>Error: {error}</p>}
+            {contourData && contourData.matrix ? (
+              <Plot data={getContourPlotData()} layout={plotLayout} />
+            ) : (
+              !isLoading && (
+                <p>No contour data available for the selected options.</p>
+              )
+            )}
+          </>
         )}
       </div>
     </div>
