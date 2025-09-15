@@ -2,42 +2,54 @@ import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import Plot from "react-plotly.js";
 import "react-datepicker/dist/react-datepicker.css";
+import "./Dashboard.css";
 
-// A custom, visually pleasing color palette
 const colorPalette = {
-  temperature: "#E55451", // A rich red
-  salinity: "#5D8AA8", // A calm blue
-  pressure: "#6A5ACD", // A deep purple
+  temperature: "#E55451",
+  salinity: "#5D8AA8",
+  pressure: "#6A5ACD",
 };
 
-function LineGraph({ variable }) {
-  return <div>Line Graph for {variable}</div>;
+function LineGraph({ variable, data, layout }) {
+  return <Plot data={data} layout={layout} />;
 }
 
-function ContourPlot({ variable }) {
-  return <div>Depth-Time Contour Plot for {variable}</div>;
+function ContourPlot({ variable, layout }) {
+  // Dummy contour data for consistent size
+  const dummyData = [
+    {
+      z: [
+        [1, 2, 3, 4, 5],
+        [2, 3, 4, 5, 6],
+        [3, 4, 5, 6, 7],
+        [4, 5, 6, 7, 8],
+        [5, 6, 7, 8, 9],
+      ],
+      x: [1, 2, 3, 4, 5],
+      y: [10, 20, 30, 40, 50],
+      type: "contour",
+      colorscale: variable === "temperature" ? "Hot" : "Blues",
+      name: variable.charAt(0).toUpperCase() + variable.slice(1),
+      showscale: true,
+    },
+  ];
+  return <Plot data={dummyData} layout={layout} />;
 }
 
 const Dashboard = ({ data, onClose, latitude, longitude }) => {
   const fiveYearsAgo = new Date();
   fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
-  // States for the date pickers (updates on change)
   const [startDate, setStartDate] = useState(fiveYearsAgo);
   const [endDate, setEndDate] = useState(new Date());
-
-  // States for the submitted dates (updates on button click)
   const [submittedStartDate, setSubmittedStartDate] = useState(fiveYearsAgo);
   const [submittedEndDate, setSubmittedEndDate] = useState(new Date());
-
   const [selectedGraph, setSelectedGraph] = useState("temperature");
   const [filteredProfiles, setFilteredProfiles] = useState([]);
   const [plotType, setPlotType] = useState("line");
 
-  // Only show contour for temperature and salinity
   const contourOptions = ["temperature", "salinity"];
 
-  // Filter data based on the submitted date range
   useEffect(() => {
     if (data && data.profiles && submittedStartDate && submittedEndDate) {
       const filtered = data.profiles.filter((profile) => {
@@ -50,7 +62,6 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
     }
   }, [data, submittedStartDate, submittedEndDate]);
 
-  // Function to handle the submit button click
   const handleSubmit = () => {
     setSubmittedStartDate(startDate);
     setSubmittedEndDate(endDate);
@@ -114,13 +125,13 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
     autosize: true,
     margin: { l: 60, r: 60, b: 60, t: 80 },
     xaxis: {
-      title: "Date",
+      title: plotType === "line" ? "Date" : "X Axis",
       showgrid: false,
       zeroline: false,
       linecolor: "#ccc",
     },
     yaxis: {
-      title: getPlotData()[0].name,
+      title: plotType === "line" ? getPlotData()[0].name : "Y Axis",
       showgrid: true,
       gridcolor: "#e6e6e6",
       zeroline: true,
@@ -142,6 +153,19 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
   };
 
   if (!data) return null;
+
+  // Only show pressure in select if plotType is line
+  const graphOptions =
+    plotType === "line"
+      ? [
+          { value: "temperature", label: "Temperature" },
+          { value: "salinity", label: "Salinity" },
+          { value: "pressure", label: "Pressure" },
+        ]
+      : [
+          { value: "temperature", label: "Temperature" },
+          { value: "salinity", label: "Salinity" },
+        ];
 
   return (
     <div className="dashboard-container">
@@ -213,25 +237,60 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
 
       {/* 3. Graph Selection & Plot */}
       <div className="dashboard-section">
-        <h3>Select Graph</h3>
-        <select
-          onChange={(e) => setSelectedGraph(e.target.value)}
-          value={selectedGraph}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            justifyContent: "space-between",
+          }}
         >
-          <option value="temperature">Temperature</option>
-          <option value="salinity">Salinity</option>
-          <option value="pressure">Pressure</option>
-        </select>
-        <button
-          onClick={() => setPlotType(plotType === "line" ? "contour" : "line")}
-        >
-          {plotType === "line" ? "Show Depth-Time Contour" : "Show Line Graph"}
-        </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <h3 style={{ margin: 0 }}>
+              {plotType === "line" ? "Line Plot" : "Depth-Time Plot"}
+            </h3>
+            <select
+              onChange={(e) => setSelectedGraph(e.target.value)}
+              value={selectedGraph}
+              style={{ marginLeft: "10px" }}
+            >
+              {graphOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            className="fancy-toggle-btn"
+            onClick={() =>
+              setPlotType(plotType === "line" ? "contour" : "line")
+            }
+            style={{
+              padding: "8px 18px",
+              borderRadius: "24px",
+              border: "none",
+              background: "#0077b6",
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: "1rem",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              transition: "background 0.3s",
+              marginLeft: "10px",
+            }}
+          >
+            {plotType === "line" ? "Show Depth-Time Plot" : "Show Line Plot"}
+          </button>
+        </div>
         {filteredProfiles.length > 0 ? (
           plotType === "line" ? (
-            <Plot data={getPlotData()} layout={plotLayout} />
+            <LineGraph
+              variable={selectedGraph}
+              data={getPlotData()}
+              layout={plotLayout}
+            />
           ) : contourOptions.includes(selectedGraph) ? (
-            <ContourPlot variable={selectedGraph} />
+            <ContourPlot variable={selectedGraph} layout={plotLayout} />
           ) : (
             <div>Contour plot only available for Temperature and Salinity.</div>
           )

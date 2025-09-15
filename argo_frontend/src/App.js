@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import MapComponent from './components/MapComponent';
-import Dashboard from './components/Dashboard';
-import mockArgoFloat from './components/argoData';
-import './styles.css';
+import React, { useState } from "react";
+import MapComponent from "./components/MapComponent";
+import Dashboard from "./components/Dashboard2";
+import mockArgoFloat from "./components/argoData";
+import "./styles.css";
+import "./components/Dashboard.css";
 
 function App() {
   const [dashboardVisible, setDashboardVisible] = useState(false);
@@ -23,7 +24,7 @@ function App() {
 
   return (
     <div className="App">
-      <MapComponent 
+      <MapComponent
         onMapClick={handleMapClick}
         clickedLat={clickedLat}
         clickedLng={clickedLng}

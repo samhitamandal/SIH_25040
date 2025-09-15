@@ -1,0 +1,63 @@
+.dashboard-container {
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.fancy-toggle-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 24px;
+  background: linear-gradient(90deg, #0077b6 0%, #00b4d8 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.fancy-toggle-btn.line {
+  background: linear-gradient(90deg, #0077b6 0%, #00b4d8 100%);
+}
+
+.fancy-toggle-btn.contour {
+  background: linear-gradient(90deg, #48cae4 0%, #0077b6 100%);
+}
+
+.date-range-inputs label {
+  margin-right: 0.7rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.date-range-inputs input[type="date"] {
+  margin-left: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.variable-select {
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #0077b6;
+  background: #e0f7fa;
+  font-weight: 500;
+}
+
+.plot-area {
+  min-height: 200px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
+}
