@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import MapComponent from './components/MapComponent';
-import Dashboard from './components/Dashboard';
-import mockArgoFloat from './components/argoData';
+import Dashboard from './components/Dashboard_test';
 import './styles.css';
 
 function App() {
@@ -30,7 +29,6 @@ function App() {
       />
       {dashboardVisible && (
         <Dashboard
-          data={mockArgoFloat}
           onClose={handleCloseDashboard}
           latitude={clickedLat}
           longitude={clickedLng}
