@@ -1,8 +1,7 @@
-
 import os
 import json
 from dotenv import load_dotenv
-from google import genai
+import google.generativeai as genai
 import time
 
 # --- Load Configuration and Initialize LLM ---
@@ -10,7 +9,8 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("Error: GEMINI_API_KEY not found in .env file.")
-model = genai.Client(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 # --- Database Schema for the LLM's Context ---
