@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, useMapEvents, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, useMapEvents, CircleMarker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -20,7 +20,7 @@ const MapClickHandler = ({ onMapClick }) => {
   return null;
 };
 
-const MapComponent = ({ onMapClick, clickedLat, clickedLng }) => {
+const MapComponent = ({ onMapClick, clickedLat, clickedLng, trajectories = [] }) => {
   const mapCenter = [0, 0];
   const mapZoom = 4; // Zoomed in enough to show place names
 
@@ -49,6 +49,17 @@ const MapComponent = ({ onMapClick, clickedLat, clickedLng }) => {
           fillOpacity={0.8}
         />
       )}
+
+      {/* Draw trajectories as polylines */}
+      {Array.isArray(trajectories) && trajectories.map((traj, idx) => {
+        const positions = (traj.points || []).map(p => [p.latitude, p.longitude]);
+        if (positions.length < 2) return null;
+        const colorPalette = ['#ff5733', '#1f77b4', '#2ca02c', '#9467bd', '#8c564b', '#e377c2'];
+        const color = colorPalette[idx % colorPalette.length];
+        return (
+          <Polyline key={`traj-${idx}`} positions={positions} color={color} weight={3} opacity={0.9} />
+        );
+      })}
     </MapContainer>
   );
 };
