@@ -61,3 +61,45 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 1.5rem;
 }
+.date-range-selection > div {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.date-range-selection label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.date-range-selection .react-datepicker-wrapper {
+  width: 140px;
+}
+
+.date-range-selection input[type="text"] {
+  height: 36px;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  padding: 0 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.date-range-selection button {
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 6px;
+  border: none;
+  background: #0077b6;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any,Optional
+from datetime import date
 
 # Pydantic model for the incoming request
 class QueryRequest(BaseModel):
@@ -13,3 +14,17 @@ class QueryResponse(BaseModel):
     retrieved_docs: List[Dict[str, Any]]
     generated_sql: str
     sql_results: List[Dict[str, Any]]
+
+
+# Represents a single data point in time
+class TimeSeriesPoint(BaseModel):
+    time: date
+    avg_temperature: Optional[float]
+    avg_salinity: Optional[float]
+
+# Represents the entire API response for a time-series request
+class TimeSeriesResponse(BaseModel):
+    grid_id: str
+    latitude: float
+    longitude: float
+    profiles: List[TimeSeriesPoint]

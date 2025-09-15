@@ -31,7 +31,6 @@ function App() {
       />
       {dashboardVisible && (
         <Dashboard
-          data={mockArgoFloat}
           onClose={handleCloseDashboard}
           latitude={clickedLat}
           longitude={clickedLng}

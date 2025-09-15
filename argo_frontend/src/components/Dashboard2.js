@@ -1,20 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import Plot from "react-plotly.js";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Dashboard.css";
 
 const colorPalette = {
-  temperature: "#E55451",
+  temperature: "#0077b6",
   salinity: "#5D8AA8",
   pressure: "#6A5ACD",
 };
 
-function LineGraph({ variable, data, layout }) {
-  return <Plot data={data} layout={layout} />;
-}
-
-function ContourPlot({ variable, layout }) {
+function DummyContourPlot({ variable, layout }) {
   // Dummy contour data for consistent size
   const dummyData = [
     {
@@ -36,106 +32,115 @@ function ContourPlot({ variable, layout }) {
   return <Plot data={dummyData} layout={layout} />;
 }
 
-const Dashboard = ({ data, onClose, latitude, longitude }) => {
+const Dashboard = ({ onClose, latitude, longitude }) => {
   const fiveYearsAgo = new Date();
   fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
 
   const [startDate, setStartDate] = useState(fiveYearsAgo);
   const [endDate, setEndDate] = useState(new Date());
-  const [submittedStartDate, setSubmittedStartDate] = useState(fiveYearsAgo);
-  const [submittedEndDate, setSubmittedEndDate] = useState(new Date());
-  const [selectedGraph, setSelectedGraph] = useState("temperature");
-  const [filteredProfiles, setFilteredProfiles] = useState([]);
-  const [plotType, setPlotType] = useState("line");
+  const [selectedGraph, setSelectedGraph] = useState("temperature_10");
+  const [plotProfiles, setPlotProfiles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [plotType, setPlotType] = useState("line"); // 'line' or 'contour'
 
-  const contourOptions = ["temperature", "salinity"];
+  // Only show pressure for line plot
+  const graphOptions =
+    plotType === "line"
+      ? [
+          { value: "temperature_10", label: "Temperature @ 10m" },
+          { value: "temperature_100", label: "Temperature @ 100m" },
+          { value: "temperature_200", label: "Temperature @ 200m" },
+          { value: "temperature_500", label: "Temperature @ 500m" },
+          { value: "temperature_1000", label: "Temperature @ 1000m" },
+          { value: "salinity_10", label: "Salinity @ 10m" },
+          { value: "salinity_100", label: "Salinity @ 100m" },
+          { value: "salinity_200", label: "Salinity @ 200m" },
+          { value: "salinity_500", label: "Salinity @ 500m" },
+          { value: "salinity_1000", label: "Salinity @ 1000m" },
+          { value: "pressure_10", label: "Pressure @ 10m" },
+          { value: "pressure_100", label: "Pressure @ 100m" },
+          { value: "pressure_200", label: "Pressure @ 200m" },
+          { value: "pressure_500", label: "Pressure @ 500m" },
+          { value: "pressure_1000", label: "Pressure @ 1000m" },
+        ]
+      : [
+          { value: "temperature_10", label: "Temperature @ 10m" },
+          { value: "temperature_100", label: "Temperature @ 100m" },
+          { value: "temperature_200", label: "Temperature @ 200m" },
+          { value: "temperature_500", label: "Temperature @ 500m" },
+          { value: "temperature_1000", label: "Temperature @ 1000m" },
+          { value: "salinity_10", label: "Salinity @ 10m" },
+          { value: "salinity_100", label: "Salinity @ 100m" },
+          { value: "salinity_200", label: "Salinity @ 200m" },
+          { value: "salinity_500", label: "Salinity @ 500m" },
+          { value: "salinity_1000", label: "Salinity @ 1000m" },
+        ];
 
-  useEffect(() => {
-    if (data && data.profiles && submittedStartDate && submittedEndDate) {
-      const filtered = data.profiles.filter((profile) => {
-        const profileDate = new Date(profile.date);
-        return (
-          profileDate >= submittedStartDate && profileDate <= submittedEndDate
-        );
-      });
-      setFilteredProfiles(filtered);
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    setError(null);
+    setPlotProfiles([]);
+
+    const [variable, depth] = selectedGraph.split("_");
+    const startDateString = startDate.toISOString().split("T")[0];
+    const endDateString = endDate.toISOString().split("T")[0];
+
+    const url = `http://127.0.0.1:8080/api/timeseries_at_depth/?lat=${latitude}&lng=${longitude}&start_date=${startDateString}&end_date=${endDateString}&depth=${depth}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to fetch data");
+      }
+      const data = await response.json();
+      setPlotProfiles(data.profiles);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-  }, [data, submittedStartDate, submittedEndDate]);
-
-  const handleSubmit = () => {
-    setSubmittedStartDate(startDate);
-    setSubmittedEndDate(endDate);
   };
 
   const getPlotData = () => {
-    const plotDates = filteredProfiles.map((p) => p.date);
-    let plotYData = [];
-    let name = "";
-    let color = "";
-    let yaxisTitle = "";
-
-    switch (selectedGraph) {
-      case "temperature":
-        plotYData = filteredProfiles.map((p) => p.temperature);
-        name = "Temperature (°C)";
-        color = colorPalette.temperature;
-        yaxisTitle = "Temperature (°C)";
-        break;
-      case "salinity":
-        plotYData = filteredProfiles.map((p) => p.salinity);
-        name = "Salinity (PSU)";
-        color = colorPalette.salinity;
-        yaxisTitle = "Salinity (PSU)";
-        break;
-      case "pressure":
-        plotYData = filteredProfiles.map((p) => p.pressure);
-        name = "Pressure (dbar)";
-        color = colorPalette.pressure;
-        yaxisTitle = "Pressure (dbar)";
-        break;
-      default:
-        break;
+    const [variable] = selectedGraph.split("_");
+    let name, dataKey;
+    if (variable === "temperature") {
+      name = "Temperature (°C)";
+      dataKey = "avg_temperature";
+    } else if (variable === "salinity") {
+      name = "Salinity (PSU)";
+      dataKey = "avg_salinity";
+    } else {
+      name = "Pressure (dbar)";
+      dataKey = "avg_pressure";
     }
-
+    const plotDates = plotProfiles.map((p) => p.time);
+    const plotYData = plotProfiles.map((p) => p[dataKey]);
     return [
       {
         x: plotDates,
         y: plotYData,
         mode: "lines+markers",
         name: name,
-        marker: { color: color, size: 6 },
-        line: { color: color, width: 2 },
+        marker: { color: colorPalette[variable] || "#6A5ACD", size: 6 },
+        line: { color: colorPalette[variable] || "#6A5ACD", width: 2 },
       },
     ];
   };
 
   const plotLayout = {
-    title: {
-      text: `Oceanographic Data (${
-        selectedGraph.charAt(0).toUpperCase() + selectedGraph.slice(1)
-      })`,
-      font: {
-        family: "Arial, sans-serif",
-        size: 20,
-        color: "#333",
-      },
-    },
+    title: `Data for Grid Cell at ${latitude.toFixed(2)}°, ${longitude.toFixed(
+      2
+    )}°`,
     height: 500,
     width: 700,
     autosize: true,
     margin: { l: 60, r: 60, b: 60, t: 80 },
-    xaxis: {
-      title: plotType === "line" ? "Date" : "X Axis",
-      showgrid: false,
-      zeroline: false,
-      linecolor: "#ccc",
-    },
+    xaxis: { title: plotType === "line" ? "Date" : "X Axis" },
     yaxis: {
-      title: plotType === "line" ? getPlotData()[0].name : "Y Axis",
-      showgrid: true,
-      gridcolor: "#e6e6e6",
-      zeroline: true,
-      rangemode: "tozero",
+      title: plotType === "line" ? getPlotData()[0]?.name || "" : "Y Axis",
     },
     paper_bgcolor: "#f5f5f5",
     plot_bgcolor: "#ffffff",
@@ -152,30 +157,13 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
     },
   };
 
-  if (!data) return null;
-
-  // Only show pressure in select if plotType is line
-  const graphOptions =
-    plotType === "line"
-      ? [
-          { value: "temperature", label: "Temperature" },
-          { value: "salinity", label: "Salinity" },
-          { value: "pressure", label: "Pressure" },
-        ]
-      : [
-          { value: "temperature", label: "Temperature" },
-          { value: "salinity", label: "Salinity" },
-        ];
-
   return (
     <div className="dashboard-container">
       <button className="dashboard-close-btn" onClick={onClose}>
         &times;
       </button>
-
       <h2>Oceanographic Dashboard</h2>
 
-      {/* 1. Metadata Section */}
       <div className="dashboard-section">
         <h3>Metadata for Clicked Location</h3>
         <p>
@@ -186,11 +174,10 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
         </p>
       </div>
 
-      {/* 2. Date Range Selection */}
       <div className="dashboard-section date-range-selection">
-        <h3>Select Date Range (5 Years Data)</h3>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <div>
+        <h3>Select Date Range</h3>
+        <div style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <label>From:</label>
             <DatePicker
               selected={startDate}
@@ -199,12 +186,9 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
               startDate={startDate}
               endDate={endDate}
               dateFormat="dd-MM-yyyy"
-              showYearDropdown
-              showMonthDropdown
-              dropdownMode="select"
             />
           </div>
-          <div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <label>To:</label>
             <DatePicker
               selected={endDate}
@@ -214,28 +198,27 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
               endDate={endDate}
               minDate={startDate}
               dateFormat="dd-MM-yyyy"
-              showYearDropdown
-              showMonthDropdown
-              dropdownMode="select"
             />
           </div>
           <button
             onClick={handleSubmit}
+            disabled={isLoading}
             style={{
               padding: "8px 16px",
               borderRadius: "5px",
               border: "none",
-              background: "#007bff",
+              background: "#0077b6",
               color: "white",
               cursor: "pointer",
+              fontWeight: 600,
+              marginBottom: "2px",
             }}
           >
-            Submit
+            {isLoading ? "Loading..." : "Submit"}
           </button>
         </div>
       </div>
 
-      {/* 3. Graph Selection & Plot */}
       <div className="dashboard-section">
         <div
           style={{
@@ -282,23 +265,25 @@ const Dashboard = ({ data, onClose, latitude, longitude }) => {
             {plotType === "line" ? "Show Depth-Time Plot" : "Show Line Plot"}
           </button>
         </div>
-        {filteredProfiles.length > 0 ? (
-          plotType === "line" ? (
-            <LineGraph
-              variable={selectedGraph}
-              data={getPlotData()}
-              layout={plotLayout}
-            />
-          ) : contourOptions.includes(selectedGraph) ? (
-            <ContourPlot variable={selectedGraph} layout={plotLayout} />
-          ) : (
-            <div>Contour plot only available for Temperature and Salinity.</div>
-          )
+        {plotType === "line" ? (
+          <>
+            {isLoading && <p>Fetching data from server...</p>}
+            {error && <p style={{ color: "red" }}>Error: {error}</p>}
+            {!isLoading && !error && plotProfiles.length > 0 && (
+              <Plot data={getPlotData()} layout={plotLayout} />
+            )}
+            {!isLoading && !error && plotProfiles.length === 0 && (
+              <p>
+                No data available for the selected options. Please adjust your
+                dates or graph and click Submit.
+              </p>
+            )}
+          </>
         ) : (
-          <p>
-            No data available for the selected date range. Please adjust your
-            dates and click Submit.
-          </p>
+          <DummyContourPlot
+            variable={selectedGraph.split("_")[0]}
+            layout={plotLayout}
+          />
         )}
       </div>
     </div>
