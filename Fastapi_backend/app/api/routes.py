@@ -81,3 +81,26 @@ def get_timeseries_at_depth_endpoint(
         end_date=end_date,
         depth=depth
     )
+
+# Example endpoint in routes.py
+@router.get(
+    "/depth_time_contour/",
+    summary="Get depth-time contour data for temperature or salinity"
+)
+def get_depth_time_contour(
+    lat: float,
+    lng: float,
+    start_date: date,
+    end_date: date,
+    variable: str = "temperature",
+):
+    """
+    Returns a matrix of values (temperature or salinity) for each depth and time.
+    """
+    return argo_service.get_depth_time_contour_data(
+        lat=lat,
+        lng=lng,
+        start_date=start_date,
+        end_date=end_date,
+        variable=variable,
+    )

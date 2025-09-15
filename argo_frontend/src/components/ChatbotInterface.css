@@ -1,0 +1,107 @@
+/* General App styles */
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  font-family: Arial, sans-serif;
+  padding: 20px; 
+}
+
+/* Welcome heading style */
+.welcome-heading {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+/* =====================================
+   Updated Chatbot Container Styles
+   =====================================
+   The width has been increased for a broader UI.
+*/
+.chatbot-container {
+  width: 95%; /* Take up 95% of the parent container's width */
+  max-width: 1400px; /* Increased max-width for very large screens */
+  height: 90vh; /* Increased height to fill more of the viewport */
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Chat history styles */
+.chat-history {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Individual message styles */
+.message {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+/* User message styles */
+.message.user {
+  align-self: flex-end;
+  background-color: #007bff;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+/* AI message styles */
+.message.ai {
+  align-self: flex-start;
+  background-color: #e9ecef;
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+/* Input form styles */
+.chat-input-form {
+  display: flex;
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.chat-input-form input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: 1px solid #ced4da;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.chat-input-form input:focus {
+  border-color: #007bff;
+}
+
+.chat-input-form button {
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 20px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.chat-input-form button:hover {
+  background-color: #0056b3;
+}

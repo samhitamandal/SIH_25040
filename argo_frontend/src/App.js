@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import MapComponent from './components/MapComponent';
-import Dashboard from './components/Dashboard_test';
+import Dashboard from './components/Dashboard2';
 import './styles.css';
+import ChatbotInterface from './components/ChatbotInterface';
 
 function App() {
   const [dashboardVisible, setDashboardVisible] = useState(false);
@@ -22,7 +23,8 @@ function App() {
 
   return (
     <div className="App">
-      <MapComponent 
+      <ChatbotInterface />
+      {/* <MapComponent 
         onMapClick={handleMapClick}
         clickedLat={clickedLat}
         clickedLng={clickedLng}
@@ -33,7 +35,7 @@ function App() {
           latitude={clickedLat}
           longitude={clickedLng}
         />
-      )}
+      )} */}
     </div>
   );
 }
