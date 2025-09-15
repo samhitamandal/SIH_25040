@@ -1,0 +1,138 @@
+/* Base styles to remove default margins and padding */
+html, body, #root, .App {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Full-screen map styles */
+.leaflet-container {
+  height: 100vh;
+  width: 100vw;
+  z-index: 1; /* Ensure map is at the bottom */
+}
+
+/* Floating dashboard container */
+.dashboard-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95); /* Slightly less transparent */
+  padding: 25px; /* More padding */
+  border-radius: 12px; /* Slightly more rounded corners */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Stronger shadow */
+  z-index: 10; /* Ensure it's on top of the map */
+  max-width: 90vw; /* Wider dashboard */
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between sections */
+}
+
+/* Close button for the dashboard */
+.dashboard-close-btn {
+  position: absolute;
+  top: 15px; /* Slightly lower */
+  right: 15px; /* Slightly left */
+  background: #f44336; /* Red background */
+  color: white; /* White text */
+  border: none;
+  border-radius: 50%; /* Make it circular */
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dashboard-close-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Dashboard sections */
+.dashboard-section {
+  padding: 15px;
+  border: 1px solid #e0e0e0; /* Lighter border */
+  border-radius: 8px;
+  background-color: #f9f9f9; /* Light background for sections */
+}
+
+.dashboard-section h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 2px solid #007bff; /* Blue underline */
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+}
+
+/* Calendar styling from react-calendar */
+.react-calendar {
+  width: 100%;
+  border: 1px solid #ccc;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.125em;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.react-calendar__navigation button {
+  background: none;
+  font-size: 1.1em;
+}
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #e6e6e6;
+}
+
+.react-calendar__tile {
+  padding: 10px 6.6667px;
+}
+.react-calendar__tile--now {
+  background: #a4ddff; /* Light blue for today */
+  border-radius: 6px;
+}
+.react-calendar__tile--active {
+  background: #006edc; /* Darker blue for selected day */
+  color: white;
+  border-radius: 6px;
+}
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #005bb5;
+}
+
+/* Container for date range selection */
+.date-range-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.date-range-selection label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.date-display {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #eaf6ff;
+  border: 1px solid #b3e0ff;
+  border-radius: 5px;
+}
+
+.date-display p {
+  margin: 5px 0;
+}
