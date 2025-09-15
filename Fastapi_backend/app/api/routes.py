@@ -94,7 +94,8 @@ def get_trajectories(
     normalized_ids: List[str] = []
     for raw in argo_ids:
         parts = [p.strip() for p in raw.split(',') if p.strip()]
-        normalized_ids.extend(parts)
+        for p in parts:
+            normalized_ids.append('np.int64(' + p + ')')
     return argo_service.get_trajectories_by_argo_ids(argo_ids=normalized_ids, start_date=start_date, end_date=end_date)
 
 @router.get("/debug/argo_ids")

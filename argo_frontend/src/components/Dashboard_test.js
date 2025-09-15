@@ -16,13 +16,10 @@ const Dashboard = ({ onClose, latitude, longitude, onTrajectoriesLoaded }) => {
   const [endDate, setEndDate] = useState(new Date());
   
   const [selectedGraph, setSelectedGraph] = useState('temperature_10');
-  const [argoIdsInput, setArgoIdsInput] = useState('');
   
   const [plotProfiles, setPlotProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isLoadingTraj, setIsLoadingTraj] = useState(false);
-  const [trajError, setTrajError] = useState(null);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -51,37 +48,6 @@ const Dashboard = ({ onClose, latitude, longitude, onTrajectoriesLoaded }) => {
     }
   };
 
-  const handleFetchTrajectories = async () => {
-    const ids = argoIdsInput.split(',').map(s => s.trim()).filter(Boolean);
-    if (ids.length === 0) {
-      setTrajError('Please enter at least one Argo ID');
-      return;
-    }
-    setIsLoadingTraj(true);
-    setTrajError(null);
-    try {
-      const params = new URLSearchParams();
-      ids.forEach(id => params.append('argo_ids', id));
-      const url = `http://127.0.0.1:8080/api/trajectories?${params.toString()}`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || 'Failed to fetch trajectories');
-      }
-      const data = await res.json();
-      if (!data.trajectories || data.trajectories.length === 0) {
-        setTrajError(`No trajectory data found for Argo IDs: ${ids.join(', ')}`);
-        onTrajectoriesLoaded?.([]);
-      } else {
-        setTrajError(null);
-        onTrajectoriesLoaded?.(data.trajectories);
-      }
-    } catch (e) {
-      setTrajError(e.message);
-    } finally {
-      setIsLoadingTraj(false);
-    }
-  };
 
   const getPlotData = () => {
     const [variable] = selectedGraph.split('_');
@@ -172,18 +138,7 @@ const Dashboard = ({ onClose, latitude, longitude, onTrajectoriesLoaded }) => {
         )}
       </div>
 
-      {/* 4. Trajectory input */}
-      <div className="dashboard-section">
-        <h3>Plot Argo Float Trajectories</h3>
-        <p>Enter comma-separated Argo IDs</p>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input value={argoIdsInput} onChange={e => setArgoIdsInput(e.target.value)} placeholder="e.g. 3901600, 3901601" style={{ flex: 1, padding: '8px' }} />
-          <button onClick={handleFetchTrajectories} disabled={isLoadingTraj} style={{ padding: '8px 16px' }}>
-            {isLoadingTraj ? 'Loading...' : 'Plot'}
-          </button>
-        </div>
-        {trajError && <p style={{ color: 'red' }}>Error: {trajError}</p>}
-      </div>
+      {/* Trajectory input moved to Sidebar */}
     </div>
   );
 };
