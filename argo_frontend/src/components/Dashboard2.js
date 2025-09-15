@@ -25,7 +25,7 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
   const [plotType, setPlotType] = useState("line"); // 'line' or 'contour'
   const [contourData, setContourData] = useState(null);
 
-  // Only show pressure for line plot
+  // Line: depth-specific options (incl. pressure). Contour: variable-only options.
   const graphOptions =
     plotType === "line"
       ? [
@@ -46,17 +46,29 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
           { value: "pressure_1000", label: "Pressure @ 1000m" },
         ]
       : [
-          { value: "temperature_10", label: "Temperature @ 10m" },
-          { value: "temperature_100", label: "Temperature @ 100m" },
-          { value: "temperature_200", label: "Temperature @ 200m" },
-          { value: "temperature_500", label: "Temperature @ 500m" },
-          { value: "temperature_1000", label: "Temperature @ 1000m" },
-          { value: "salinity_10", label: "Salinity @ 10m" },
-          { value: "salinity_100", label: "Salinity @ 100m" },
-          { value: "salinity_200", label: "Salinity @ 200m" },
-          { value: "salinity_500", label: "Salinity @ 500m" },
-          { value: "salinity_1000", label: "Salinity @ 1000m" },
+          { value: "temperature", label: "Temperature (all depths)" },
+          { value: "salinity", label: "Salinity (all depths)" },
         ];
+
+  // Toggle handler: normalize selection across modes
+  const togglePlotType = () => {
+    const nextType = plotType === "line" ? "contour" : "line";
+    setPlotType(nextType);
+    if (nextType === "contour") {
+      const variable = selectedGraph.split("_")[0];
+      if (variable === "temperature" || variable === "salinity") {
+        setSelectedGraph(variable);
+      } else {
+        setSelectedGraph("temperature");
+      }
+    } else {
+      // Default depth when switching back to line
+      const variable = selectedGraph.split("_")[0];
+      if (variable === "salinity") setSelectedGraph("salinity_10");
+      else if (variable === "temperature") setSelectedGraph("temperature_10");
+      else setSelectedGraph("temperature_10");
+    }
+  };
 
   // Fetch line plot data
   const handleSubmit = async () => {
@@ -284,9 +296,7 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
           </div>
           <button
             className="fancy-toggle-btn"
-            onClick={() =>
-              setPlotType(plotType === "line" ? "contour" : "line")
-            }
+            onClick={togglePlotType}
             style={{
               padding: "8px 18px",
               borderRadius: "24px",
