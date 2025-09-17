@@ -28,3 +28,18 @@ class TimeSeriesResponse(BaseModel):
     latitude: float
     longitude: float
     profiles: List[TimeSeriesPoint]
+
+
+# --- Trajectories ---
+class TrajectoryPoint(BaseModel):
+    time: date
+    latitude: float
+    longitude: float
+    grid_id: str
+
+class TrajectorySeries(BaseModel):
+    argo_id: str
+    points: List[TrajectoryPoint]
+
+class TrajectoriesResponse(BaseModel):
+    trajectories: List[TrajectorySeries]

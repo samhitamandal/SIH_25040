@@ -26,7 +26,7 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
     setError(null);
     setPlotProfiles([]);
 
-    const [variable, depth] = selectedGraph.split('_');
+    const [variable, _depth] = selectedGraph.split('_');
     
     const startDateString = startDate.toISOString().split('T')[0];
     const endDateString = endDate.toISOString().split('T')[0];
@@ -136,6 +136,7 @@ const Dashboard = ({ onClose, latitude, longitude }) => {
           <p>No data available for the selected options. Please adjust your dates or graph and click Submit.</p>
         )}
       </div>
+      {/* Trajectory input moved to Sidebar */}
     </div>
   );
 };
