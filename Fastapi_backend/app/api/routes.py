@@ -1,6 +1,7 @@
 # In file: app/api/routes.py
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from typing import List, Optional
 from ..schemas.models import QueryRequest, QueryResponse
 from ..agents.retrieval_agent import retrieve_vector_docs
 from ..agents.sql_agent import generate_sql_query
@@ -104,3 +105,36 @@ def get_depth_time_contour(
         end_date=end_date,
         variable=variable,
     )
+
+# --- NEW: Trajectory endpoint ---
+@router.get("/trajectories")
+def get_trajectories(
+    argo_ids: List[str] = Query(..., description="One or more Argo IDs; repeat param or comma-separated"),
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None
+):
+    # Normalize: support comma-separated values in addition to repeated params
+    normalized_ids: List[str] = []
+    for raw in argo_ids:
+        parts = [p.strip() for p in raw.split(',') if p.strip()]
+        for p in parts:
+            normalized_ids.append('np.int64(' + p + ')')
+    return argo_service.get_trajectories_by_argo_ids(argo_ids=normalized_ids, start_date=start_date, end_date=end_date)
+
+@router.get("/debug/argo_ids")
+def debug_argo_ids():
+    """Debug endpoint to see what argo_float_ids look like in the database"""
+    from ..services.postgres_service import execute_secure_query
+    sql = """
+    SELECT argo_float_ids, COUNT(*) as count
+    FROM "average_ocean_profiles" 
+    WHERE argo_float_ids IS NOT NULL 
+    GROUP BY argo_float_ids 
+    ORDER BY count DESC 
+    LIMIT 10
+    """
+    try:
+        results = execute_secure_query(sql, {})
+        return {"sample_argo_float_ids": results}
+    except Exception as e:
+        return {"error": str(e)}

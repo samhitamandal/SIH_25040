@@ -40,7 +40,6 @@ def _generate_chroma_filter(user_query: str) -> dict:
     """
     (Internal Helper) Uses an LLM to generate a ChromaDB 'where' filter.
     """
-    # This prompt has been updated with a critical rule for handling ranges.
     prompt = f"""
     You are an expert at creating database filters for ChromaDB. Your task is to analyze the user's query and generate a valid ChromaDB 'where' filter as a JSON object.
 
@@ -69,6 +68,11 @@ def _generate_chroma_filter(user_query: str) -> dict:
     - **CORRECT:** `{{"$and": [{{"temperature": {{"$gte": 10}}}}, {{"temperature": {{"$lte": 20}}}}]}}`
     - **INCORRECT:** `{{"$and": [{{"temperature": {{"$gte": 10, "$lte": 20}}}}]}}`
 
+    **NEW RULE FOR MULTIPLE VALUES:**
+    If a user's query implies a list of values for a single field (e.g., "Argo float IDs 12345 and 67890"), use the `$in` operator.
+    - **CORRECT:** `{{"argo_float_id": {{"$in": ["12345", "67890"]}}}}`
+    - **INCORRECT:** `{{"$and": [{{"argo_float_id": {{"$eq": "12345"}}}}, {{"argo_float_id": {{"$eq": "67890"}}}}]}}`
+
     **OTHER RULES:**
     1. For a location box (e.g., "in the North Atlantic"), combine all latitude and longitude conditions into a single `$and` list. Example: `{{"$and": [{{"latitude": {{"$gte": 30}}}}, {{"latitude": {{"$lte": 60}}}}, {{"longitude": {{"$gte": -75}}}}, {{"longitude": {{"$lte": -15}}}}]}}`.
     2. For a time filter (e.g., "in March 2023"), use `$and` with `year` and `month`. Example: `{{"$and": [{{"year": {{"$eq": 2023}}}}, {{"month": {{"$eq": 3}}}}]}}`.
@@ -78,6 +82,8 @@ def _generate_chroma_filter(user_query: str) -> dict:
     Based on the query and all the rules, what is the appropriate ChromaDB 'where' filter?
     Return ONLY the JSON object, with no other text or explanations.
     """
+    
+
     print("\n> Generating filter from query...")
     retries = 3
     wait_time = 5  # Start with a 5-second wait

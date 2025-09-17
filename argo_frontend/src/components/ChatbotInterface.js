@@ -1,19 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown'; // Import the ReactMarkdown component
+import remarkGfm from 'remark-gfm'; // Import the GFM plugin
 import './ChatbotInterface.css';
 
-// Define the URL of your FastAPI backend
-const API_URL = "http://localhost:8080";
+// Define the correct URL for your FastAPI backend
+const API_URL = "http://localhost:8080"; // Corrected port to 8000
 
 function ChatbotInterface() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const chatHistoryRef = useRef(null);
 
   // Initial greeting
   useEffect(() => {
     const initialMessage = { text: "Hello! I am FloatChat. What can I help you find about ARGO ocean data?", sender: 'ai' };
     setMessages([initialMessage]);
   }, []);
+
+  // Auto-scroll to the bottom of the chat history
+  useEffect(() => {
+    if (chatHistoryRef.current) {
+      chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -22,17 +32,17 @@ function ChatbotInterface() {
     const userMessage = { text: input, sender: 'user' };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput('');
-    setIsTyping(true); // Show typing indicator
+    setIsTyping(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/query`, {
+      const response = await fetch(`${API_URL}/api/query`, { // Corrected endpoint to /query
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           query: userMessage.text,
-          k: 6 // Default value for number of documents to retrieve
+          k: 6
         }),
       });
 
@@ -41,10 +51,9 @@ function ChatbotInterface() {
       }
 
       const data = await response.json();
-      // The bot's response is now within the 'final_answer' key
       const aiResponse = { text: data.final_answer, sender: 'ai' };
       
-      setIsTyping(false); // Hide typing indicator
+      setIsTyping(false);
       setMessages((prevMessages) => [...prevMessages, aiResponse]);
 
     } catch (error) {
@@ -57,10 +66,13 @@ function ChatbotInterface() {
 
   return (
     <div className="chatbot-container">
-      <div className="chat-history">
+      <div className="chat-history" ref={chatHistoryRef}>
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.sender}`}>
-            {msg.text}
+            {/* Use ReactMarkdown to render the message text */}
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {msg.text}
+            </ReactMarkdown>
           </div>
         ))}
         {isTyping && <div className="message ai typing-indicator">...</div>}

@@ -17,9 +17,9 @@ model = genai.Client(api_key=GEMINI_API_KEY)
 POSTGRES_SCHEMA = """
 You have access to a PostgreSQL database with two tables:
 
-1. `"Average_Ocean_Profiles"`: This table has historical data of the Indian Ocean, Bay of Bengal, and Arabian Sea. It contains surface-level depth data.
+1. `"average_ocean_profiles"`: This table has historical data of the Indian Ocean, Bay of Bengal, and Arabian Sea. It contains surface-level depth data.
    Columns:
-   - `"TIME"` (date): The date of the measurement.
+   - `time` (date): The date of the measurement.
    - `grid_id` (text): A unique identifier for the geographical grid cell.
    - `latitude` (float): The center latitude of the grid cell.
    - `longitude` (float): The center longitude of the grid cell.

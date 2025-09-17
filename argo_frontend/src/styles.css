@@ -11,41 +11,121 @@ html, body, #root, .App {
   flex-direction: column;
 }
 
-/* Full-screen map styles */
-.leaflet-container {
-  height: 100vh;
-  width: 100vw;
-  z-index: 1; /* Ensure map is at the bottom */
+/* --- New container to hold content below the navbar --- */
+.main-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding-top: 50px;
+  box-sizing: border-box;
 }
 
+/* --- New styles for the top navigation bar --- */
+.top-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background-color: #b9b5b5;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: #0056b3;
+}
+
+.sidebar-toggle-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.sidebar-toggle-btn:hover {
+  background-color: #0056b3;
+}
+
+/* --- Updated Sidebar Positioning and Styling --- */
+.sidebar-container {
+  position: fixed;
+  top: 50px; /* Positioned just below the navbar */
+  left: 0;
+  height: calc(100vh - 50px);
+  width: 300px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
+  padding: 12px;
+}
+
+.sidebar-content {
+  padding-top: 10px;
+}
+.sidebar-content label, .sidebar-content input, .sidebar-content button {
+  width: 100%;
+}
+
+/* All other styles remain the same from your previous code */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
 /* Floating dashboard container */
 .dashboard-container {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.95); /* Slightly less transparent */
-  padding: 25px; /* More padding */
-  border-radius: 12px; /* Slightly more rounded corners */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Stronger shadow */
-  z-index: 10; /* Ensure it's on top of the map */
-  max-width: 90vw; /* Wider dashboard */
-  max-height: 90vh;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 95vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Space between sections */
+  gap: 15px;
 }
 
 /* Close button for the dashboard */
 .dashboard-close-btn {
   position: absolute;
-  top: 15px; /* Slightly lower */
-  right: 15px; /* Slightly left */
-  background: #f44336; /* Red background */
-  color: white; /* White text */
+  top: 15px;
+  right: 15px;
+  background: #f44336;
+  color: white;
   border: none;
-  border-radius: 50%; /* Make it circular */
+  border-radius: 50%;
   width: 30px;
   height: 30px;
   font-size: 1.2rem;
@@ -63,15 +143,15 @@ html, body, #root, .App {
 /* Dashboard sections */
 .dashboard-section {
   padding: 15px;
-  border: 1px solid #e0e0e0; /* Lighter border */
+  
   border-radius: 8px;
-  background-color: #f9f9f9; /* Light background for sections */
+  background-color: #f9f9f9;
 }
 
 .dashboard-section h3 {
   margin-top: 0;
   color: #333;
-  border-bottom: 2px solid #007bff; /* Blue underline */
+  border-bottom: 2px solid #007bff;
   padding-bottom: 8px;
   margin-bottom: 15px;
 }
@@ -99,11 +179,11 @@ html, body, #root, .App {
   padding: 10px 6.6667px;
 }
 .react-calendar__tile--now {
-  background: #a4ddff; /* Light blue for today */
+  background: #a4ddff;
   border-radius: 6px;
 }
 .react-calendar__tile--active {
-  background: #006edc; /* Darker blue for selected day */
+  background: #006edc;
   color: white;
   border-radius: 6px;
 }
@@ -135,4 +215,34 @@ html, body, #root, .App {
 
 .date-display p {
   margin: 5px 0;
+}
+
+/* --- Corrected Chatbot container positioning --- */
+.fullscreen-chatbot {
+  /* Remove absolute positioning */
+  /* position: absolute; */ 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  box-sizing: border-box;
+}
+
+.fullscreen-chatbot .chatbot-container {
+  width: 90vw;
+  max-width: 1400px;
+  height: 90vh;
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
