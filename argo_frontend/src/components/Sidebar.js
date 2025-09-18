@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
-const Sidebar = ({ onPlot, isLoading, isOpen }) => { // Remove useState for isOpen
+const Sidebar = ({ onPlot, onClear, isLoading, isOpen }) => {
   const [ids, setIds] = useState('');
   const [error, setError] = useState(null);
+  const [hasPlotted, setHasPlotted] = useState(false); // 👈 track if Plot pressed
 
   const handlePlot = () => {
     const parsed = ids.split(',').map(s => s.trim()).filter(Boolean);
@@ -12,27 +13,83 @@ const Sidebar = ({ onPlot, isLoading, isOpen }) => { // Remove useState for isOp
     }
     setError(null);
     onPlot(parsed);
+    setHasPlotted(true); // show Clear button after plotting
+  };
+
+  const handleClear = () => {
+    setIds('');
+    setError(null);
+    onClear(); 
+    setHasPlotted(false); // hide Clear button after clearing
   };
 
   return (
-    <div className="sidebar-container" style={{
-      transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-      transition: 'transform 0.3s ease-in-out',
-    }}>
+    <div
+      className="sidebar-container"
+      style={{
+        transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.3s ease-in-out',
+      }}
+    >
       <div className="sidebar-content">
         <h3 style={{ margin: '0 0 0 8px', fontSize: 16 }}>Argo Trajectories</h3>
         <div style={{ padding: 12 }}>
-          <label style={{ fontSize: 12, color: '#555' }}>Enter comma-separated Argo IDs</label>
+          <label style={{ fontSize: 12, color: '#555' }}>
+            Enter comma-separated Argo IDs
+          </label>
           <input
             value={ids}
             onChange={e => setIds(e.target.value)}
             placeholder="e.g. 6903059, 6903060"
-            style={{ width: '100%', marginTop: 6, padding: 8, borderRadius: 6, border: '1px solid #ddd' }}
+            style={{
+              width: '100%',
+              marginTop: 6,
+              padding: 8,
+              borderRadius: 6,
+              border: '1px solid #ddd',
+            }}
           />
-          {error && <div style={{ color: 'red', marginTop: 6, fontSize: 12 }}>{error}</div>}
-          <button onClick={handlePlot} disabled={isLoading} style={{ marginTop: 10, width: '100%', padding: 10, background: '#007bff', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+          {error && (
+            <div style={{ color: 'red', marginTop: 6, fontSize: 12 }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={handlePlot}
+            disabled={isLoading}
+            style={{
+              marginTop: 10,
+              width: '100%',
+              padding: 10,
+              background: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
             {isLoading ? 'Loading…' : 'Plot'}
           </button>
+
+          {/* ✅ Only show Clear button if something was plotted */}
+          {hasPlotted && (
+            <button
+              onClick={handleClear}
+              style={{
+                marginTop: 8,
+                width: '100%',
+                padding: 10,
+                background: '#dc3545',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer',
+              }}
+            >
+              Clear
+            </button>
+          )}
         </div>
       </div>
     </div>

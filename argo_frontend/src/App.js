@@ -33,6 +33,11 @@ function App() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const handleClearTrajectories = () => {
+  setTrajectories([]);
+};
+
+
   const handleMapClick = (lat, lng) => {
     setClickedLat(lat);
     setClickedLng(lng);
@@ -95,10 +100,12 @@ function App() {
           trajectories={trajectories}
         />
         <Sidebar 
-          onPlot={fetchTrajectories} 
-          isLoading={isLoadingTraj} 
-          isOpen={isSidebarOpen}
-        />
+  onPlot={fetchTrajectories} 
+  onClear={handleClearTrajectories} 
+  isLoading={isLoadingTraj} 
+  isOpen={isSidebarOpen}
+/>
+
         {dashboardVisible && (
           <Dashboard
             onClose={handleCloseDashboard}
